@@ -31,7 +31,7 @@ describe("/api/categories", () => {
         });
       });
   });
-  test.only("GET - status 404 - responds with error when passed unavailable route", () => {
+  test("GET - status 404 - responds with error when passed unavailable route", () => {
     return request(app).get("/api/categor").expect(404);
   });
 });
