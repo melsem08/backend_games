@@ -1,10 +1,12 @@
 const express = require("express");
 const { getCategories } = require("./controllers/categories.controller");
 const { getApi } = require("./controllers/api.controller");
+const { getReviewById } = require("./controllers/reviews.controller");
 const app = express();
 
 app.get("/api/categories", getCategories);
 app.get("/api", getApi);
+app.get("/api/reviews/:review_id", getReviewById);
 
 app.use((error, request, response, next) => {
   if (error.code === "22P02") {
