@@ -99,3 +99,39 @@ describe("/api/reviews/:review_id", () => {
       });
   });
 });
+describe("/api/reviews", () => {
+  test("GET - status 200, responds with correct review objects", () => {
+    return request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .then((response) => {
+        const reviews = response.body.reviews;
+        reviews.forEach((review) => {
+          expect(typeof review.review_id).toBe("number");
+          expect(typeof review.title).toBe("string");
+          expect(typeof review.category).toBe("string");
+          expect(typeof review.designer).toBe("string");
+          expect(typeof review.owner).toBe("string");
+          expect(typeof review.review_img_url).toBe("string");
+          expect(typeof review.created_at).toBe("string");
+          expect(typeof review.votes).toBe("number");
+          expect(typeof review.comment_count).toBe("string");
+          expect(typeof review.review_body).toBe("undefined");
+        });
+      });
+  });
+  test("GET - status 200, responds with review objects sorted by date in descending order", () => {
+    return request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .then((response) => {
+        const reviews = response.body.reviews;
+        expect(reviews).toBeSortedBy("created_at", {
+          descending: true,
+        });
+      });
+  });
+  test("GET - status 404 - responds with error when passed unavailable route", () => {
+    return request(app).get("/api/reviev").expect(404);
+  });
+});
