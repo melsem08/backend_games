@@ -10,3 +10,9 @@ exports.getReviewById = (request, response, next) => {
       next(error);
     });
 };
+
+exports.getReviews = (request, response) => {
+  selectReviews().then((reviews) => {
+    response.status(200).send({ reviews: reviews });
+  });
+};
