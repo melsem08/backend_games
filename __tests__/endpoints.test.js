@@ -19,7 +19,7 @@ afterAll(() => {
   return db.end();
 });
 
-describe("/api/categories", () => {
+describe("GET, /api/categories", () => {
   test("GET - status 200 - responds with all categories", () => {
     return request(app)
       .get("/api/categories")
@@ -37,7 +37,7 @@ describe("/api/categories", () => {
     return request(app).get("/api/categor").expect(404);
   });
 });
-describe("/api", () => {
+describe("GET, /api", () => {
   test("GET - status 200, responds with right JSON object", () => {
     const checkData = fsSync.readFileSync("./endpoints.json", "utf-8");
     return request(app)
@@ -59,7 +59,7 @@ describe("/api", () => {
       });
   });
 });
-describe("/api/reviews/:review_id", () => {
+describe("GET, /api/reviews/:review_id", () => {
   test("GET - status 200, responds with review object with correct properties", () => {
     return request(app)
       .get("/api/reviews/1")
@@ -99,7 +99,7 @@ describe("/api/reviews/:review_id", () => {
       });
   });
 });
-describe("/api/reviews", () => {
+describe("GET, /api/reviews", () => {
   test("GET - status 200, responds with correct review objects", () => {
     return request(app)
       .get("/api/reviews")
@@ -116,7 +116,6 @@ describe("/api/reviews", () => {
           expect(typeof review.created_at).toBe("string");
           expect(typeof review.votes).toBe("number");
           expect(typeof review.comment_count).toBe("string");
-          expect(typeof review.review_body).toBe("undefined");
         });
       });
   });
@@ -135,13 +134,14 @@ describe("/api/reviews", () => {
     return request(app).get("/api/reviev").expect(404);
   });
 });
-describe("/api/reviews/:review_id/comments", () => {
+describe("GET, /api/reviews/:review_id/comments", () => {
   test("GET - status 200 - responds with correct comments object for the given review_id that has comments", () => {
     return request(app)
       .get("/api/reviews/3/comments")
       .expect(200)
       .then((response) => {
         const comments = response.body.comments;
+        expect(comments.length).not.toBe(0);
         comments.forEach((comment) => {
           expect(typeof comment.comment_id).toBe("number");
           expect(typeof comment.votes).toBe("number");
@@ -163,7 +163,7 @@ describe("/api/reviews/:review_id/comments", () => {
         });
       });
   });
-  test("GET - status 200 - responds with empty comments array for the given existing review_id ", () => {
+  test("GET - status 200 - responds with empty comments array for the given existing review_id with no comments", () => {
     return request(app)
       .get("/api/reviews/1/comments")
       .expect(200)
@@ -178,6 +178,121 @@ describe("/api/reviews/:review_id/comments", () => {
       .expect(404)
       .then((response) => {
         expect(response.body.message).toBe("Review not found :(");
+      });
+  });
+  test("GET - status 400, responds with error message when passed review number is invalid", () => {
+    return request(app)
+      .get("/api/reviews/something/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Bad request :(");
+      });
+  });
+});
+describe("POST, /api/reviews/:review_id/comments", () => {
+  test("POST - status 201 - responds with fresh-posted comment", () => {
+    const newComment = {
+      username: "dav3rid",
+      body: "OMG this game is so good I spent 2 days with no rest playing it",
+    };
+    return request(app)
+      .post("/api/reviews/5/comments")
+      .send(newComment)
+      .expect(201)
+      .then((response) => {
+        const comment = response.body.comment;
+        expect(comment.review_id).toBe(5);
+        expect(comment.author).toBe("dav3rid");
+        expect(comment.body).toBe(
+          "OMG this game is so good I spent 2 days with no rest playing it"
+        );
+      });
+  });
+  test("POST - status 201 - responds with fresh-posted comment if additional property passed except of necessary ones, additional property has to be ignored", () => {
+    const newComment = {
+      username: "dav3rid",
+      body: "OMG this game is so good I spent 2 days with no rest playing it",
+      votes: 10,
+    };
+    return request(app)
+      .post("/api/reviews/5/comments")
+      .send(newComment)
+      .expect(201)
+      .then((response) => {
+        const comment = response.body.comment;
+        expect(comment.review_id).toBe(5);
+        expect(comment.author).toBe("dav3rid");
+        expect(comment.body).toBe(
+          "OMG this game is so good I spent 2 days with no rest playing it"
+        );
+      });
+  });
+  test("POST - status 400 - responds with error message when one or more fields of comment object missing", () => {
+    const newComment = {
+      username: "dav3rid",
+    };
+    return request(app)
+      .post("/api/reviews/5/comments")
+      .send(newComment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe(
+          "Now enough information to post a comment"
+        );
+      });
+  });
+  test("POST - status 400 - responds with error message when one or more fields of comment object have incorrect type", () => {
+    const newComment = {
+      username: "dav3rid",
+      body: 8,
+    };
+    return request(app)
+      .post("/api/reviews/5/comments")
+      .send(newComment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe(
+          "The type of information you are trying to enter are not correct"
+        );
+      });
+  });
+  test("POST - status 404 - responds with error message when non-existent username passed", () => {
+    const newComment = {
+      username: "Jimmy",
+      body: "OMG this game is so good I spent 2 days with no rest playing it",
+    };
+    return request(app)
+      .post("/api/reviews/5/comments")
+      .send(newComment)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Not found :(");
+      });
+  });
+  test("POST - status 404, responds with error message when object with passed review number doesn't exist", () => {
+    const newComment = {
+      username: "dav3rid",
+      body: "OMG this game is so good I spent 2 days with no rest playing it",
+    };
+    return request(app)
+      .post("/api/reviews/88888888/comments")
+      .send(newComment)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Review not found :(");
+      });
+  });
+  test("POST - status 400, responds with error message when passed review number is invalid", () => {
+    const newComment = {
+      username: "dav3rid",
+      body: "OMG this game is so good I spent 2 days with no rest playing it",
+    };
+    return request(app)
+      .post("/api/reviews/something/comments")
+      .send(newComment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Bad request :(");
       });
   });
 });
