@@ -69,3 +69,25 @@ exports.insertCommentsByReviewId = (comment, reviewId) => {
     });
   });
 };
+
+exports.updateReviewById = (update, reviewId) => {
+  if (!update.hasOwnProperty("inc_votes")) {
+    return Promise.reject({
+      status: 400,
+      message: "Please pass a number of votes to change",
+    });
+  } else if (typeof update.inc_votes !== "number") {
+    return Promise.reject({
+      status: 400,
+      message:
+        "The type of the votes property is not correct, has to be a number",
+    });
+  }
+  const queryString = `UPDATE reviews SET votes = votes + ($1) WHERE review_id = ($2) RETURNING *;`;
+  const queryValues = [update.inc_votes, reviewId];
+  return this.selectReviewById(reviewId).then(() => {
+    return db.query(queryString, queryValues).then(({ rows }) => {
+      return rows[0];
+    });
+  });
+};
