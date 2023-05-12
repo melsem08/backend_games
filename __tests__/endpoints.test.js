@@ -372,7 +372,7 @@ describe("DELETE, /api/comments/:comment_id", () => {
   test("DELETE - status 404 - responds with error when passed unavailable route", () => {
     return request(app).get("/api/comme/1").expect(404);
   });
-  test("GET - status 404, responds with error message when object with passed comment number doesn't exist", () => {
+  test("DELETE - status 404, responds with error message when object with passed comment number doesn't exist", () => {
     return request(app)
       .delete("/api/comments/88888888")
       .expect(404)
@@ -380,7 +380,7 @@ describe("DELETE, /api/comments/:comment_id", () => {
         expect(response.body.message).toBe("Comment not found :(");
       });
   });
-  test("GET - status 400, responds with error message when passed review number is invalid", () => {
+  test("DELETE - status 400, responds with error message when passed comment number is invalid", () => {
     return request(app)
       .delete("/api/comments/something")
       .expect(400)
