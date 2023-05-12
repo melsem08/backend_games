@@ -29,3 +29,17 @@ exports.selectReviews = () => {
       return results.rows;
     });
 };
+
+exports.selectCommentsByReviewId = (reviewId) => {
+  return this.selectReviewById(reviewId)
+    .then(() => {
+      return db.query(
+        `SELECT * FROM comments WHERE review_id=($1)
+  ORDER BY created_at DESC;`,
+        [reviewId]
+      );
+    })
+    .then((results) => {
+      return results.rows;
+    });
+};

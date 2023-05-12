@@ -135,3 +135,49 @@ describe("/api/reviews", () => {
     return request(app).get("/api/reviev").expect(404);
   });
 });
+describe("/api/reviews/:review_id/comments", () => {
+  test("GET - status 200 - responds with correct comments object for the given review_id that has comments", () => {
+    return request(app)
+      .get("/api/reviews/3/comments")
+      .expect(200)
+      .then((response) => {
+        const comments = response.body.comments;
+        comments.forEach((comment) => {
+          expect(typeof comment.comment_id).toBe("number");
+          expect(typeof comment.votes).toBe("number");
+          expect(typeof comment.created_at).toBe("string");
+          expect(typeof comment.author).toBe("string");
+          expect(typeof comment.body).toBe("string");
+          expect(typeof comment.review_id).toBe("number");
+        });
+      });
+  });
+  test("GET - status 200, responds with correct comments object sorted in descending order", () => {
+    return request(app)
+      .get("/api/reviews/3/comments")
+      .expect(200)
+      .then((response) => {
+        const comments = response.body.comments;
+        expect(comments).toBeSortedBy("created_at", {
+          descending: true,
+        });
+      });
+  });
+  test("GET - status 200 - responds with empty comments array for the given existing review_id ", () => {
+    return request(app)
+      .get("/api/reviews/1/comments")
+      .expect(200)
+      .then((response) => {
+        const comments = response.body.comments;
+        expect(comments).toEqual([]);
+      });
+  });
+  test("GET - status 404, responds with error message when passed review number doesn't exist", () => {
+    return request(app)
+      .get("/api/reviews/888/comments")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Review not found :(");
+      });
+  });
+});
