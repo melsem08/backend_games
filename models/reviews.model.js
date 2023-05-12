@@ -48,7 +48,7 @@ exports.insertCommentsByReviewId = (comment, reviewId) => {
   if (!comment.hasOwnProperty("username") || !comment.hasOwnProperty("body")) {
     return Promise.reject({
       status: 400,
-      message: "Missing necessary property!",
+      message: "Now enough information to post a comment",
     });
   } else if (
     typeof comment.username !== "string" ||
@@ -56,7 +56,8 @@ exports.insertCommentsByReviewId = (comment, reviewId) => {
   ) {
     return Promise.reject({
       status: 400,
-      message: "Incorrect property type!",
+      message:
+        "The type of information you are trying to enter are not correct",
     });
   }
   comment.review_id = reviewId;

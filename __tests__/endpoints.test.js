@@ -189,11 +189,31 @@ describe("GET, /api/reviews/:review_id/comments", () => {
       });
   });
 });
-describe("POST, /api/reviews/:review_id/comments", () => {
+describe.only("POST, /api/reviews/:review_id/comments", () => {
   test("POST - status 201 - responds with fresh-posted comment", () => {
     const newComment = {
       username: "dav3rid",
       body: "OMG this game is so good I spent 2 days with no rest playing it",
+    };
+    return request(app)
+      .post("/api/reviews/5/comments")
+      .send(newComment)
+      .expect(201)
+      .then((response) => {
+        const comment = response.body.comment;
+        expect(comment.review_id).toBe(5);
+        expect(comment.author).toBe("dav3rid");
+        expect(comment.body).toBe(
+          "OMG this game is so good I spent 2 days with no rest playing it"
+        );
+        expect(comment.votes).toBe(0);
+      });
+  });
+  test("POST - status 201 - responds with fresh-posted comment if additional property passed except of necessary", () => {
+    const newComment = {
+      username: "dav3rid",
+      body: "OMG this game is so good I spent 2 days with no rest playing it",
+      votes: 10,
     };
     return request(app)
       .post("/api/reviews/5/comments")
@@ -218,7 +238,9 @@ describe("POST, /api/reviews/:review_id/comments", () => {
       .send(newComment)
       .expect(400)
       .then((response) => {
-        expect(response.body.message).toBe("Missing necessary property!");
+        expect(response.body.message).toBe(
+          "Now enough information to post a comment"
+        );
       });
   });
   test("POST - status 400 - responds with error message when one or more fields of comment object have incorrect type", () => {
@@ -231,7 +253,22 @@ describe("POST, /api/reviews/:review_id/comments", () => {
       .send(newComment)
       .expect(400)
       .then((response) => {
-        expect(response.body.message).toBe("Incorrect property type!");
+        expect(response.body.message).toBe(
+          "The type of information you are trying to enter are not correct"
+        );
+      });
+  });
+  test("POST - status 400 - responds with error message when non-existent username passed", () => {
+    const newComment = {
+      username: "Jimmy",
+      body: "OMG this game is so good I spent 2 days with no rest playing it",
+    };
+    return request(app)
+      .post("/api/reviews/5/comments")
+      .send(newComment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Bad request :(");
       });
   });
   test("POST - status 404, responds with error message when object with passed review number doesn't exist", () => {
