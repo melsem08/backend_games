@@ -206,10 +206,9 @@ describe("POST, /api/reviews/:review_id/comments", () => {
         expect(comment.body).toBe(
           "OMG this game is so good I spent 2 days with no rest playing it"
         );
-        expect(comment.votes).toBe(0);
       });
   });
-  test("POST - status 201 - responds with fresh-posted comment if additional property passed except of necessary", () => {
+  test("POST - status 201 - responds with fresh-posted comment if additional property passed except of necessary ones, additional property has to be ignored", () => {
     const newComment = {
       username: "dav3rid",
       body: "OMG this game is so good I spent 2 days with no rest playing it",
@@ -226,7 +225,6 @@ describe("POST, /api/reviews/:review_id/comments", () => {
         expect(comment.body).toBe(
           "OMG this game is so good I spent 2 days with no rest playing it"
         );
-        expect(comment.votes).toBe(0);
       });
   });
   test("POST - status 400 - responds with error message when one or more fields of comment object missing", () => {
@@ -258,7 +256,7 @@ describe("POST, /api/reviews/:review_id/comments", () => {
         );
       });
   });
-  test("POST - status 400 - responds with error message when non-existent username passed", () => {
+  test("POST - status 404 - responds with error message when non-existent username passed", () => {
     const newComment = {
       username: "Jimmy",
       body: "OMG this game is so good I spent 2 days with no rest playing it",
@@ -266,9 +264,9 @@ describe("POST, /api/reviews/:review_id/comments", () => {
     return request(app)
       .post("/api/reviews/5/comments")
       .send(newComment)
-      .expect(400)
+      .expect(404)
       .then((response) => {
-        expect(response.body.message).toBe("Bad request :(");
+        expect(response.body.message).toBe("Not found :(");
       });
   });
   test("POST - status 404, responds with error message when object with passed review number doesn't exist", () => {

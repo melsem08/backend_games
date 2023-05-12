@@ -18,8 +18,10 @@ app.get("/api/reviews/:review_id/comments", getCommentsByReviewId);
 app.post("/api/reviews/:review_id/comments", postCommentsByReviewId);
 
 app.use((error, request, response, next) => {
-  if (error.code === "22P02" || error.code === "23503") {
+  if (error.code === "22P02") {
     response.status(400).send({ message: "Bad request :(" });
+  } else if (error.code === "23503") {
+    response.status(404).send({ message: "Not found :(" });
   } else {
     next(error);
   }
