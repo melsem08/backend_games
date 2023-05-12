@@ -296,3 +296,72 @@ describe("POST, /api/reviews/:review_id/comments", () => {
       });
   });
 });
+describe("PATCH /api/reviews/:review_id", () => {
+  test("PATCH - status 200, responds with successfully updated review object", () => {
+    const infoToUpdate = { inc_votes: 15 };
+    return request(app)
+      .patch("/api/reviews/1")
+      .send(infoToUpdate)
+      .expect(200)
+      .then((response) => {
+        const updatedReview = response.body.review;
+        expect(updatedReview.votes).toBe(16);
+      });
+  });
+  test("PATCH - status 200 - responds with successfully updated review object if additional property passed except of necessary one, additional property has to be ignored", () => {
+    const infoToUpdate = { inc_votes: 15, title: "Something" };
+    return request(app)
+      .patch("/api/reviews/1")
+      .send(infoToUpdate)
+      .expect(200)
+      .then((response) => {
+        const updatedReview = response.body.review;
+        expect(updatedReview.votes).toBe(16);
+        expect(updatedReview.title).toBe("Agricola");
+      });
+  });
+  test("PATCH - status 400 - responds with error message when required update field is missing", () => {
+    const infoToUpdate = {};
+    return request(app)
+      .patch("/api/reviews/1")
+      .send(infoToUpdate)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe(
+          "Please pass a number of votes to change"
+        );
+      });
+  });
+  test("PATCH - status 400 - responds with error message when update field has incorrect type", () => {
+    const infoToUpdate = { inc_votes: "15" };
+    return request(app)
+      .patch("/api/reviews/1")
+      .send(infoToUpdate)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe(
+          "The type of the votes property is not correct, has to be a number"
+        );
+      });
+  });
+  test("PATCH - status 404, responds with error message when object with passed review number doesn't exist", () => {
+    const infoToUpdate = { inc_votes: 15 };
+    return request(app)
+      .patch("/api/reviews/88888888")
+      .send(infoToUpdate)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Review not found :(");
+      });
+  });
+  test("PATCH - status 400, responds with error message when passed review number is invalid", () => {
+    const infoToUpdate = { inc_votes: 15 };
+    return request(app)
+      .patch("/api/reviews/something")
+      .send(infoToUpdate)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Bad request :(");
+      });
+  });
+});
