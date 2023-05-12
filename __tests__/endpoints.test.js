@@ -189,7 +189,7 @@ describe("GET, /api/reviews/:review_id/comments", () => {
       });
   });
 });
-describe.only("POST, /api/reviews/:review_id/comments", () => {
+describe("POST, /api/reviews/:review_id/comments", () => {
   test("POST - status 201 - responds with fresh-posted comment", () => {
     const newComment = {
       username: "dav3rid",
