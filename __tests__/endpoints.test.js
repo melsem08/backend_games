@@ -389,3 +389,22 @@ describe("DELETE, /api/comments/:comment_id", () => {
       });
   });
 });
+describe("GET, /api/users", () => {
+  test("GET - status 200 - responds with all categories", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then((response) => {
+        const users = response.body.users;
+        expect(users.length).toBe(4);
+        users.forEach((user) => {
+          expect(typeof user.username).toBe("string");
+          expect(typeof user.name).toBe("string");
+          expect(typeof user.avatar_url).toBe("string");
+        });
+      });
+  });
+  test("GET - status 404 - responds with error when passed unavailable route", () => {
+    return request(app).get("/api/uses").expect(404);
+  });
+});
