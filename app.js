@@ -24,13 +24,26 @@ app.delete("/api/comments/:comment_id", deleteCommentById);
 app.get("/api/users", getUsers);
 
 app.use((error, request, response, next) => {
-  if (error.code === "22P02") {
-    response.status(400).send({ message: "Bad request :(" });
-  } else if (error.code === "23503") {
-    response.status(404).send({ message: "Not found :(" });
+  const errorLookUp = {
+    "22P02": { status: 400, message: "Bad request :(" },
+    23503: { status: 404, message: "Not found :(" },
+    42703: { status: 404, message: "Sort category not found :(" },
+  };
+  if (errorLookUp.hasOwnProperty(error.code)) {
+    response
+      .status(errorLookUp[error.code]["status"])
+      .send({ message: errorLookUp[error.code]["message"] });
   } else {
     next(error);
   }
+  // if (error.code === "22P02") {
+  //   response.status(400).send({ message: "Bad request :(" });
+  // }
+  //  else if (error.code === "23503") {
+  //   response.status(404).send({ message: "Not found :(" });
+  // } else {
+  //   next(error);
+  // }
 });
 
 app.use((error, request, response, next) => {

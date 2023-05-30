@@ -100,12 +100,16 @@ describe("GET, /api/reviews/:review_id", () => {
   });
 });
 describe("GET, /api/reviews", () => {
-  test("GET - status 200, responds with correct review objects", () => {
+  test("GET - status 200, responds with review objects for all categories by default that sorted by default date and order", () => {
     return request(app)
       .get("/api/reviews")
       .expect(200)
       .then((response) => {
         const reviews = response.body.reviews;
+        expect(reviews).toBeSortedBy("created_at", {
+          descending: true,
+        });
+        expect(reviews.length).toBe(13);
         reviews.forEach((review) => {
           expect(typeof review.review_id).toBe("number");
           expect(typeof review.title).toBe("string");
@@ -119,14 +123,93 @@ describe("GET, /api/reviews", () => {
         });
       });
   });
-  test("GET - status 200, responds with review objects sorted by date in descending order", () => {
+  test("GET - status 200, responds with reviews for passed category sorted by default date and order", () => {
     return request(app)
-      .get("/api/reviews")
+      .get("/api/reviews?category=social deduction")
       .expect(200)
       .then((response) => {
         const reviews = response.body.reviews;
+        reviews.forEach((review) => {
+          expect(review.category).toBe("social deduction");
+        });
         expect(reviews).toBeSortedBy("created_at", {
           descending: true,
+        });
+      });
+  });
+  test("GET - status 200, responds with review objects for all categories by default sorted by passed column and default order", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=votes")
+      .expect(200)
+      .then((response) => {
+        const reviews = response.body.reviews;
+        expect(reviews.length).toBe(13);
+        expect(reviews).toBeSortedBy("votes", {
+          descending: true,
+        });
+      });
+  });
+  test("GET - status 200, responds with review objects for all categories by default sorted by default column in passed order", () => {
+    return request(app)
+      .get("/api/reviews?order=asc")
+      .expect(200)
+      .then((response) => {
+        const reviews = response.body.reviews;
+        expect(reviews.length).toBe(13);
+        expect(reviews).toBeSortedBy("created_at", {
+          ascending: true,
+        });
+      });
+  });
+  test("GET - status 200, responds with review objects for passed category that sorted by passed date in passed order", () => {
+    return request(app)
+      .get("/api/reviews?category=social deduction&sort_by=title&order=asc")
+      .expect(200)
+      .then((response) => {
+        const reviews = response.body.reviews;
+        reviews.forEach((review) => {
+          expect(review.category).toBe("social deduction");
+        });
+        expect(reviews).toBeSortedBy("title", {
+          ascending: true,
+        });
+      });
+  });
+  test("GET - status 404 - responds with error when passed non-existent category", () => {
+    return request(app)
+      .get("/api/reviews?category=something")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Category not found :(");
+      });
+  });
+  test("GET - status 400 - responds with error when passed non-existent sort-by column", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=wrong")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Sorting query is not valid");
+      });
+  });
+  test("GET - status 400 - responds with error when passed non-existent sorting order", () => {
+    return request(app)
+      .get("/api/reviews?order=plain")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Sorting order is not valid");
+      });
+  });
+  test("GET - status 200 - responds with review objects ignoring wrong-named query, other queries will be applied", () => {
+    return request(app)
+      .get("/api/reviews?category=social deduction&sourt_by=title&order=asc")
+      .expect(200)
+      .then((response) => {
+        const reviews = response.body.reviews;
+        reviews.forEach((review) => {
+          expect(review.category).toBe("social deduction");
+        });
+        expect(reviews).toBeSortedBy("created_at", {
+          ascending: true,
         });
       });
   });

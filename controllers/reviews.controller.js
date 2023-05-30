@@ -17,10 +17,15 @@ exports.getReviewById = (request, response, next) => {
     });
 };
 
-exports.getReviews = (request, response) => {
-  selectReviews().then((reviews) => {
-    response.status(200).send({ reviews: reviews });
-  });
+exports.getReviews = (request, response, next) => {
+  const { category, sort_by, order } = request.query;
+  selectReviews(category, sort_by, order)
+    .then((reviews) => {
+      response.status(200).send({ reviews: reviews });
+    })
+    .catch((error) => {
+      next(error);
+    });
 };
 
 exports.getCommentsByReviewId = (request, response, next) => {
