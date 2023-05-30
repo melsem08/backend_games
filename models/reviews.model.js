@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { validCategories } = require("../db/seeds/utils");
 
 exports.selectReviewById = (reviewId) => {
   const queryString = `SELECT * FROM reviews WHERE review_id=($1)`;
@@ -14,20 +15,53 @@ exports.selectReviewById = (reviewId) => {
   });
 };
 
-exports.selectReviews = () => {
-  return db
-    .query(
-      `SELECT reviews.review_id, reviews.owner, reviews.title, reviews.category, reviews.review_img_url,
+exports.selectReviews = (category, sort_by = "created_at", order = "desc") => {
+  const validSortQueries = {
+    review_id: true,
+    owner: true,
+    title: true,
+    category: true,
+    review_img_url: true,
+    created_at: true,
+    votes: true,
+    designer: true,
+    comment_count: true,
+  };
+  const validSortOrders = { desc: true, asc: true };
+  if (!validSortQueries.hasOwnProperty(sort_by)) {
+    return Promise.reject({
+      status: 400,
+      message: "Sorting query is not valid",
+    });
+  }
+  if (!validSortOrders.hasOwnProperty(order)) {
+    return Promise.reject({
+      status: 400,
+      message: "Sorting order is not valid",
+    });
+  }
+  const queryValues = [];
+  let queryString = `SELECT reviews.review_id, reviews.owner, reviews.title, reviews.category, reviews.review_img_url,
        reviews.created_at, reviews.votes, reviews.designer, COUNT(comments.comment_id) AS comment_count
        FROM reviews
-       JOIN comments
+       LEFT JOIN comments
        ON reviews.review_id = comments.review_id
-       GROUP BY reviews.review_id
-       ORDER BY reviews.created_at DESC;`
-    )
-    .then((results) => {
+       `;
+
+  if (category) {
+    queryString += `WHERE category = $1
+       `;
+    queryValues.push(category);
+  }
+
+  queryString += `GROUP BY reviews.review_id
+       ORDER BY ${sort_by} ${order};`;
+
+  return validCategories(category).then(() => {
+    return db.query(queryString, queryValues).then((results) => {
       return results.rows;
     });
+  });
 };
 
 exports.selectCommentsByReviewId = (reviewId) => {
