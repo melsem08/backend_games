@@ -11,8 +11,8 @@ const {
 } = require("./controllers/reviews.controller");
 const { deleteCommentById } = require("./controllers/comments.controller");
 const { getUsers } = require("./controllers/users.controller");
-app.use(cors());
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.get("/api/categories", getCategories);
