@@ -1,8 +1,13 @@
 const db = require("../db/connection");
-const { validCategories } = require("../db/seeds/utils");
+const { validCategories, checkReviewById } = require("../db/seeds/utils");
 
 exports.selectReviewById = (reviewId) => {
-  const queryString = `SELECT * FROM reviews WHERE review_id=($1)`;
+  const queryString = `SELECT reviews.*, COUNT(comments.comment_id) AS comment_count
+       FROM reviews
+       LEFT JOIN comments
+       ON reviews.review_id = comments.review_id
+       WHERE reviews.review_id = $1
+       GROUP BY reviews.review_id;`;
   const queryValue = [reviewId];
   return db.query(queryString, queryValue).then((results) => {
     if (results.rows.length === 0) {
@@ -65,7 +70,7 @@ exports.selectReviews = (category, sort_by = "created_at", order = "desc") => {
 };
 
 exports.selectCommentsByReviewId = (reviewId) => {
-  return this.selectReviewById(reviewId)
+  return checkReviewById(reviewId)
     .then(() => {
       return db.query(
         `SELECT * FROM comments WHERE review_id=($1)
@@ -97,7 +102,7 @@ exports.insertCommentsByReviewId = (comment, reviewId) => {
   comment.review_id = reviewId;
   const queryString = `INSERT INTO comments (body, review_id, author) VALUES ($1, $2, $3) RETURNING*;`;
   const queryValues = [comment.body, comment.review_id, comment.username];
-  return this.selectReviewById(reviewId).then(() => {
+  return checkReviewById(reviewId).then(() => {
     return db.query(queryString, queryValues).then(({ rows }) => {
       return rows[0];
     });
@@ -119,7 +124,7 @@ exports.updateReviewById = (update, reviewId) => {
   }
   const queryString = `UPDATE reviews SET votes = votes + ($1) WHERE review_id = ($2) RETURNING *;`;
   const queryValues = [update.inc_votes, reviewId];
-  return this.selectReviewById(reviewId).then(() => {
+  return checkReviewById(reviewId).then(() => {
     return db.query(queryString, queryValues).then(({ rows }) => {
       return rows[0];
     });

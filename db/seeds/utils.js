@@ -37,18 +37,16 @@ exports.validCategories = (category) => {
   });
 };
 
-// exports.validSorting = (sort_by_category) => {
-//   console.log("IN UTIL FUNC validSorting");
-//   const queryString = `SELECT * FROM categories WHERE slug =($1)`;
-//   const queryValue = [category];
-//   return db.query(queryString, queryValue).then((results) => {
-//     console.log("CHECK MADE");
-//     if (results.rows.length === 0) {
-//       return Promise.reject({
-//         status: 404,
-//         message: "Review not found :(",
-//       });
-//     }
-//     return results.rows;
-//   });
-// };
+exports.checkReviewById = (reviewId) => {
+  const queryString = `SELECT * FROM reviews WHERE review_id=($1)`;
+  const queryValue = [reviewId];
+  return db.query(queryString, queryValue).then((results) => {
+    if (results.rows.length === 0) {
+      return Promise.reject({
+        status: 404,
+        message: "Review not found :(",
+      });
+    }
+    return results.rows;
+  });
+};
