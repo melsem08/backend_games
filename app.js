@@ -9,7 +9,10 @@ const {
   postCommentsByReviewId,
   patchReviewById,
 } = require("./controllers/reviews.controller");
-const { deleteCommentById } = require("./controllers/comments.controller");
+const {
+  deleteCommentById,
+  patchCommentById,
+} = require("./controllers/comments.controller");
 const {
   getUsers,
   getUserByUsername,
@@ -28,6 +31,7 @@ app.patch("/api/reviews/:review_id", patchReviewById);
 app.delete("/api/comments/:comment_id", deleteCommentById);
 app.get("/api/users", getUsers);
 app.get("/api/users/:username", getUserByUsername);
+app.patch("/api/comments/:comment_id", patchCommentById);
 
 app.use((error, request, response, next) => {
   const errorLookUp = {
