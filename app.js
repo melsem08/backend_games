@@ -10,7 +10,10 @@ const {
   patchReviewById,
 } = require("./controllers/reviews.controller");
 const { deleteCommentById } = require("./controllers/comments.controller");
-const { getUsers } = require("./controllers/users.controller");
+const {
+  getUsers,
+  getUserByUsername,
+} = require("./controllers/users.controller");
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -24,6 +27,7 @@ app.post("/api/reviews/:review_id/comments", postCommentsByReviewId);
 app.patch("/api/reviews/:review_id", patchReviewById);
 app.delete("/api/comments/:comment_id", deleteCommentById);
 app.get("/api/users", getUsers);
+app.get("/api/users/:username", getUserByUsername);
 
 app.use((error, request, response, next) => {
   const errorLookUp = {

@@ -99,15 +99,6 @@ describe("GET, /api/reviews/:review_id", () => {
         expect(response.body.message).toBe("Bad request :(");
       });
   });
-  // test.only("GET - status 200, responds with review object with correct properties", () => {
-  //   return request(app)
-  //     .get("/api/reviews/3")
-  //     .expect(200)
-  //     .then((response) => {
-  //       const review = response.body.review;
-  //       console.log(review);
-  //     });
-  // });
 });
 describe("GET, /api/reviews", () => {
   test("GET - status 200, responds with review objects for all categories by default that sorted by default date and order", () => {
@@ -483,7 +474,7 @@ describe("DELETE, /api/comments/:comment_id", () => {
   });
 });
 describe("GET, /api/users", () => {
-  test("GET - status 200 - responds with all categories", () => {
+  test("GET - status 200, responds with all categories", () => {
     return request(app)
       .get("/api/users")
       .expect(200)
@@ -499,5 +490,31 @@ describe("GET, /api/users", () => {
   });
   test("GET - status 404 - responds with error when passed unavailable route", () => {
     return request(app).get("/api/uses").expect(404);
+  });
+});
+describe("GET, /api/users/:username", () => {
+  test("GET - status 200, responds with correct user when passed correct username", () => {
+    return request(app)
+      .get("/api/users/mallionaire")
+      .expect(200)
+      .then((response) => {
+        const user = response.body.user;
+        expect(typeof user.username).toBe("string");
+        expect(typeof user.name).toBe("string");
+        expect(typeof user.avatar_url).toBe("string");
+      });
+  });
+  test("GET - status 404, responds with error message when user with passed username doesn't exist", () => {
+    return request(app)
+      .get("/api/users/mallion")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe(
+          "User with the entered name was not found"
+        );
+      });
+  });
+  test("GET - status 404 - responds with error when passed unavailable route", () => {
+    return request(app).get("/api/use/mallionaire").expect(404);
   });
 });
