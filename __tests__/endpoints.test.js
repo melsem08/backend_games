@@ -518,3 +518,72 @@ describe("GET, /api/users/:username", () => {
     return request(app).get("/api/use/mallionaire").expect(404);
   });
 });
+describe("PATCH, /api/comments/:comment_id", () => {
+  test("PATCH - status 200, responds with successfully updated comment object", () => {
+    const updateObject = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(updateObject)
+      .expect(200)
+      .then((response) => {
+        const updatedComment = response.body.comment;
+        expect(updatedComment.votes).toBe(17);
+      });
+  });
+  test("PATCH - status 200 - responds with successfully updated comment object if additional property passed except of necessary one, additional property has to be ignored", () => {
+    const updateObject = { inc_votes: 1, author: "Something" };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(updateObject)
+      .expect(200)
+      .then((response) => {
+        const updatedComment = response.body.comment;
+        expect(updatedComment.votes).toBe(17);
+        expect(updatedComment.author).toBe("bainesface");
+      });
+  });
+  test("PATCH - status 400 - responds with error message when required update field is missing", () => {
+    const updateObject = {};
+    return request(app)
+      .patch("/api/comments/1")
+      .send(updateObject)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe(
+          "Please pass a number of votes to change"
+        );
+      });
+  });
+  test("PATCH - status 400 - responds with error message when update field has incorrect type", () => {
+    const updateObject = { inc_votes: "1" };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(updateObject)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe(
+          "The type of the votes property is not correct, has to be a number"
+        );
+      });
+  });
+  test("PATCH - status 404, responds with error message when object with passed comment id doesn't exist", () => {
+    const updateObject = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/comments/88888888")
+      .send(updateObject)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Comment not found :(");
+      });
+  });
+  test("PATCH - status 400, responds with error message when passed comment id is invalid", () => {
+    const updateObject = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/comments/something")
+      .send(updateObject)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Bad request :(");
+      });
+  });
+});
