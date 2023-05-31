@@ -76,6 +76,7 @@ describe("GET, /api/reviews/:review_id", () => {
           expect(typeof review.review_img_url).toBe("string");
           expect(typeof review.created_at).toBe("string");
           expect(typeof review.votes).toBe("number");
+          expect(typeof review.comment_count).toBe("string");
         });
       });
   });
@@ -98,6 +99,15 @@ describe("GET, /api/reviews/:review_id", () => {
         expect(response.body.message).toBe("Bad request :(");
       });
   });
+  // test.only("GET - status 200, responds with review object with correct properties", () => {
+  //   return request(app)
+  //     .get("/api/reviews/3")
+  //     .expect(200)
+  //     .then((response) => {
+  //       const review = response.body.review;
+  //       console.log(review);
+  //     });
+  // });
 });
 describe("GET, /api/reviews", () => {
   test("GET - status 200, responds with review objects for all categories by default that sorted by default date and order", () => {
