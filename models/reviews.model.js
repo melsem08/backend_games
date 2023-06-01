@@ -1,5 +1,10 @@
 const db = require("../db/connection");
-const { validCategories, checkReviewById } = require("../db/seeds/utils");
+const {
+  validCategories,
+  checkReviewById,
+  checkBody,
+  validUsernames,
+} = require("../db/seeds/utils");
 
 exports.selectReviewById = (reviewId) => {
   const queryString = `SELECT reviews.*, COUNT(comments.comment_id) AS comment_count
@@ -103,8 +108,10 @@ exports.insertCommentsByReviewId = (comment, reviewId) => {
   const queryString = `INSERT INTO comments (body, review_id, author) VALUES ($1, $2, $3) RETURNING*;`;
   const queryValues = [comment.body, comment.review_id, comment.username];
   return checkReviewById(reviewId).then(() => {
-    return db.query(queryString, queryValues).then(({ rows }) => {
-      return rows[0];
+    return validUsernames(comment.username).then(() => {
+      return db.query(queryString, queryValues).then(({ rows }) => {
+        return rows[0];
+      });
     });
   });
 };
@@ -127,6 +134,40 @@ exports.updateReviewById = (update, reviewId) => {
   return checkReviewById(reviewId).then(() => {
     return db.query(queryString, queryValues).then(({ rows }) => {
       return rows[0];
+    });
+  });
+};
+
+exports.insertReview = (review) => {
+  const { error } = checkBody(review);
+  if (error) {
+    return Promise.reject({
+      status: 400,
+      message: error.details[0].message,
+    });
+  }
+  let queryString = `INSERT INTO reviews (owner, title, review_body, designer, category`;
+
+  if (review.review_img_url) {
+    queryString += `, review_img_url`;
+  }
+
+  queryString += `) VALUES ($1, $2, $3, $4, $5`;
+
+  if (review.review_img_url) {
+    queryString += `, $6`;
+  }
+
+  queryString += `) RETURNING*;`;
+
+  const queryValues = Object.values(review);
+  return validCategories(review.category).then(() => {
+    return validUsernames(review.owner).then(() => {
+      return db.query(queryString, queryValues).then(({ rows }) => {
+        return this.selectReviewById(rows[0].review_id).then((result) => {
+          return result[0];
+        });
+      });
     });
   });
 };

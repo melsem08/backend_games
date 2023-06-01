@@ -8,6 +8,7 @@ const {
   getCommentsByReviewId,
   postCommentsByReviewId,
   patchReviewById,
+  postReview,
 } = require("./controllers/reviews.controller");
 const {
   deleteCommentById,
@@ -32,6 +33,7 @@ app.delete("/api/comments/:comment_id", deleteCommentById);
 app.get("/api/users", getUsers);
 app.get("/api/users/:username", getUserByUsername);
 app.patch("/api/comments/:comment_id", patchCommentById);
+app.post("/api/reviews", postReview);
 
 app.use((error, request, response, next) => {
   const errorLookUp = {
@@ -46,14 +48,6 @@ app.use((error, request, response, next) => {
   } else {
     next(error);
   }
-  // if (error.code === "22P02") {
-  //   response.status(400).send({ message: "Bad request :(" });
-  // }
-  //  else if (error.code === "23503") {
-  //   response.status(404).send({ message: "Not found :(" });
-  // } else {
-  //   next(error);
-  // }
 });
 
 app.use((error, request, response, next) => {

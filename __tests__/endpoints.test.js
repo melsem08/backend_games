@@ -340,7 +340,7 @@ describe("POST, /api/reviews/:review_id/comments", () => {
         );
       });
   });
-  test("POST - status 404 - responds with error message when non-existent username passed", () => {
+  test("POST - status 400 - responds with error message when non-existent username passed", () => {
     const newComment = {
       username: "Jimmy",
       body: "OMG this game is so good I spent 2 days with no rest playing it",
@@ -350,7 +350,7 @@ describe("POST, /api/reviews/:review_id/comments", () => {
       .send(newComment)
       .expect(404)
       .then((response) => {
-        expect(response.body.message).toBe("Not found :(");
+        expect(response.body.message).toBe("Username not found :(");
       });
   });
   test("POST - status 404, responds with error message when object with passed review number doesn't exist", () => {
@@ -585,5 +585,176 @@ describe("PATCH, /api/comments/:comment_id", () => {
       .then((response) => {
         expect(response.body.message).toBe("Bad request :(");
       });
+  });
+  test("PATCH - status 404 - responds with error when passed unavailable route", () => {
+    const updateObject = { inc_votes: 1 };
+    return request(app).patch("/api/comment/1").send(updateObject).expect(404);
+  });
+});
+describe("POST, /api/reviews", () => {
+  test("POST - status 201, responds with fresh-posted review when URI was not passed", () => {
+    const newReview = {
+      owner: "dav3rid",
+      title: "Monopoly",
+      review_body: "Do you want to be rich?",
+      designer: "Lizzie Magie",
+      category: "euro game",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(201)
+      .then((response) => {
+        const createdReview = response.body.review;
+        expect(typeof createdReview.review_id).toBe("number");
+        expect(typeof createdReview.title).toBe("string");
+        expect(typeof createdReview.category).toBe("string");
+        expect(typeof createdReview.review_body).toBe("string");
+        expect(typeof createdReview.designer).toBe("string");
+        expect(typeof createdReview.owner).toBe("string");
+        expect(typeof createdReview.review_img_url).toBe("string");
+        expect(typeof createdReview.created_at).toBe("string");
+        expect(typeof createdReview.votes).toBe("number");
+        expect(typeof createdReview.comment_count).toBe("string");
+      });
+  });
+  test("POST - status 201, responds with fresh-posted review when URI was passed", () => {
+    const newReview = {
+      owner: "dav3rid",
+      title: "Monopoly",
+      review_body: "Do you want to be rich?",
+      designer: "Lizzie Magie",
+      category: "euro game",
+      review_img_url:
+        "https://images.pexels.com/photos/163064/play-stone-network-networked-interactive-163064.jpeg?w=700&h=700",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(201)
+      .then((response) => {
+        const createdReview = response.body.review;
+        expect(typeof createdReview.review_id).toBe("number");
+        expect(typeof createdReview.title).toBe("string");
+        expect(typeof createdReview.category).toBe("string");
+        expect(typeof createdReview.review_body).toBe("string");
+        expect(typeof createdReview.designer).toBe("string");
+        expect(typeof createdReview.owner).toBe("string");
+        expect(typeof createdReview.review_img_url).toBe("string");
+        expect(typeof createdReview.created_at).toBe("string");
+        expect(typeof createdReview.votes).toBe("number");
+        expect(typeof createdReview.comment_count).toBe("string");
+      });
+  });
+  test("POST - status 400, responds with error message if additional property passed except of necessary ones", () => {
+    const newReview = {
+      owner: "dav3rid",
+      title: "Monopoly",
+      review_body: "Do you want to be rich?",
+      designer: "Lizzie Magie",
+      category: "euro game",
+      review_img_url:
+        "https://images.pexels.com/photos/163064/play-stone-network-networked-interactive-163064.jpeg?w=700&h=700",
+      username: "something",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe('"username" is not allowed');
+      });
+  });
+  test("POST - status 400 - responds with error message when one or more fields of review object are missing", () => {
+    const newReview = {
+      owner: "dav3rid",
+      title: "Monopoly",
+      review_body: "Do you want to be rich?",
+      designer: "Lizzie Magie",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe('"category" is required');
+      });
+  });
+  test("POST - status 400 - responds with error message when one or more fields of review object have incorrect type", () => {
+    const newReview = {
+      owner: "dav3rid",
+      title: "Monopoly",
+      review_body: 888,
+      designer: "Lizzie Magie",
+      category: "euro game",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe('"review_body" must be a string');
+      });
+  });
+  test("POST - status 404 - responds with error message when non-existent username passed", () => {
+    const newReview = {
+      owner: "something",
+      title: "Monopoly",
+      review_body: "Do you want to be rich?",
+      designer: "Lizzie Magie",
+      category: "euro game",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Username not found :(");
+      });
+  });
+  test("POST - status 404 - responds with error message when non-existent category passed", () => {
+    const newReview = {
+      owner: "something",
+      title: "Monopoly",
+      review_body: "Do you want to be rich?",
+      designer: "Lizzie Magie",
+      category: "party bangers",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Category not found :(");
+      });
+  });
+  test("POST - status 400 - responds with error message when review_img_url with string type passed but it has wrong format", () => {
+    const newReview = {
+      owner: "something",
+      title: "Monopoly",
+      review_body: "Do you want to be rich?",
+      designer: "Lizzie Magie",
+      category: "euro game",
+      review_img_url: "something",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe(
+          '"review_img_url" must be a valid uri'
+        );
+      });
+  });
+  test("POST - status 400 - responds with error when passed unavailable route", () => {
+    const newReview = {
+      owner: "something",
+      title: "Monopoly",
+      review_body: "Do you want to be rich?",
+      designer: "Lizzie Magie",
+      category: "euro game",
+    };
+    return request(app).post("/api/review").send(newReview).expect(404);
   });
 });

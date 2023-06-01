@@ -1,4 +1,5 @@
 const db = require("../connection");
+const Joi = require("joi");
 
 exports.convertTimestampToDate = ({ created_at, ...otherProperties }) => {
   if (!created_at) return { ...otherProperties };
@@ -59,6 +60,32 @@ exports.checkReviewById = (reviewId) => {
       return Promise.reject({
         status: 404,
         message: "Review not found :(",
+      });
+    }
+    return results.rows;
+  });
+};
+
+exports.checkBody = (data) => {
+  const schema = Joi.object({
+    owner: Joi.string().required(),
+    title: Joi.string().required(),
+    review_body: Joi.string().required(),
+    designer: Joi.string().required(),
+    category: Joi.string().required(),
+    review_img_url: Joi.string().uri().optional(),
+  });
+  return schema.validate(data);
+};
+
+exports.validUsernames = (username) => {
+  const queryString = `SELECT * FROM users WHERE username =($1)`;
+  const queryValue = [username];
+  return db.query(queryString, queryValue).then((results) => {
+    if (results.rows.length === 0) {
+      return Promise.reject({
+        status: 404,
+        message: "Username not found :(",
       });
     }
     return results.rows;
