@@ -50,13 +50,13 @@ $ npm install
 
 Once the dependencies are installed, you can set up the test and development databases and seed them, typing the following:
 
-- `npm run setup-dbs` command for setting up your databases
+- `npm run setup-dbs` command for setting up your databases:
 
 ```bash
 $ npm run setup-dbs
 ```
 
-- `npm run seed` command for seeding databases with data
+- `npm run seed` command for seeding databases with data:
 
 ```bash
 $ npm run seed
