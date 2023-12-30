@@ -14,7 +14,7 @@ Back-end project that is incorporated in a front-end project Games World Magazin
 
 This project was created in order to improve my back-end coding skills during participation in Northcoders Bootcamp, using Express, Postgres and Jest.
 
-This project is an API that allows you to search through reviews of different board games. All of them contain useful information about different games both popular and lesser known, including game designer, review author, description of the game, image etc.
+This project is an API that allows you to search through reviews of different board games. All of them contain useful information about different games both popular and lesser known, including game designer, review author, description of the game, image, etc.
 
 This back-end project is used later in a front-end project named Games World Magazine, you can find it [here on Github](https://github.com/melsem08/frontend_games), or deployed version [here](https://nc-games-magazine.netlify.app/).
 
